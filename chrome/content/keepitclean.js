@@ -1,14 +1,11 @@
 var keepitclean = {};
 
-keepitclean.toolbar_button_validate = function(e) {
-    keepitclean.do_validate ();
-}
-
-keepitclean.onFirefoxLoad = function(event) {
+keepitclean.initial_load = function(ev) {
     dump ("onFirefoxLoad()\n");
 
     // Find the most recently used window
-    var mediator = Components.classes['@mozilla.org/appshell/window-mediator;1']
+    var mediator
+	= Components.classes['@mozilla.org/appshell/window-mediator;1']
         .getService(Components.interfaces.nsIWindowMediator);
     var doc = mediator.getMostRecentWindow("navigator:browser").document;
 
@@ -22,7 +19,7 @@ keepitclean.onFirefoxLoad = function(event) {
     newItem.appendChild(itemLabel);
     addonBar.appendChild(newItem);
 
-    itemLabel.value = "Hello world";
+    itemLabel.value = "validator loading...";
 
     keepitclean.count = 0;
     keepitclean.toolbar_icon = itemLabel;
@@ -30,7 +27,9 @@ keepitclean.onFirefoxLoad = function(event) {
     keepitclean.ready = 1;
 };
 
-window.addEventListener("load", function () { keepitclean.onFirefoxLoad(); }, false);
+window.addEventListener("load",
+			function () {keepitclean.initial_load();},
+			false);
 
 keepitclean.set_status = function (flag) {
     var msg, style;
@@ -49,27 +48,28 @@ keepitclean.set_status = function (flag) {
     keepitclean.validation_result = msg;
 }
 
-gBrowser.addEventListener (
-    "load",
-    function (ev) {
-	dump ("gBrowser load event\n");
+keepitclean.every_page_load = function (ev) {
+    dump ("gBrowser load event\n");
 	
-	if (! keepitclean || ! keepitclean.ready)
-	    return;
+    if (! keepitclean || ! keepitclean.ready)
+	return;
 
-	var doc = ev.originalTarget;
+    var doc = ev.originalTarget;
 
-	if (! doc instanceof HTMLDocument)
-	    return;
+    if (! doc instanceof HTMLDocument)
+	return;
 
-	while (doc.defaultView.frameElement)
-	    doc = doc.defaultView.frameElement.ownerDocument;
+    while (doc.defaultView.frameElement)
+	doc = doc.defaultView.frameElement.ownerDocument;
 
-	dump ("loaded " + doc + "\n");			       
+    dump ("loaded " + doc + "\n");			       
 
-	window.foobar = "foobar\n";
+    window.foobar = "foobar\n";
 
-	keepitclean.count++;
-	keepitclean.set_status (keepitclean.count & 1);
-    }, 
-    true);
+    keepitclean.count++;
+    keepitclean.set_status (keepitclean.count & 1);
+} 
+
+gBrowser.addEventListener ("load",
+			   function (ev) { keepitclean.every_page_load (ev); },
+			   true);
