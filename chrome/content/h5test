@@ -1,0 +1,20 @@
+#! /usr/bin/env node
+/* -*- mode:javascript -*- */
+
+var fs = require ("fs");
+
+var filename = process.argv[2];
+
+if (! filename) {
+    console.log ("usage: h5test filename");
+    process.exit (1);
+}
+
+var html = fs.readFileSync (filename, "utf8");
+
+var h5val = require ("./h5val.js");
+
+h5val.validate (html);
+
+process.exit (0);
+

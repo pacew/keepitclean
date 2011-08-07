@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+
+<window 
+    id="validation-results"
+    title="Validate Results"
+    orient="horizontal"
+    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+  <groupbox align="center" orient="horizontal" >
+    <vbox>
+      <text id="validation-results-text" value="test3" />
+    </vbox>
+  </groupbox>
+
+  <script src="results.js"/>
+
+
+</window>

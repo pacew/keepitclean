@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+
+<!DOCTYPE dialog SYSTEM "chrome://pacetest3/locale/validate.dtd">
+
+<dialog id='xyz' title="pacetest3"
+	buttons="accept"
+	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  <groupbox align="center" orient="horizontal">
+    <vbox>
+        <text value="test"/>
+    </vbox>
+  </groupbox>
+</dialog>

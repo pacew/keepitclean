@@ -1,0 +1,19 @@
+#! /bin/sh
+
+profile_dir=`ls -dt ~/.mozilla/firefox/*.dev | head -1`
+
+if [ "${profile_dir}" = "" ]
+then
+    echo "can't find dev profile"
+    exit 1
+fi
+
+extensions_dir=${profile_dir}/extensions
+
+if [ ! -d ${extensions_dir} ]
+then
+    echo "${extensions_dir} does not exist"
+    exit 1
+fi
+
+pwd > ${extensions_dir}/keepitclean@pacew.org
