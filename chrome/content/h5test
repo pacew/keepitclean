@@ -14,7 +14,13 @@ var html = fs.readFileSync (filename, "utf8");
 
 var h5val = require ("./h5val.js");
 
-h5val.validate (html);
+var r = h5val.validate (html);
+
+if (r == null) {
+    console.log ("validation passed");
+} else {
+    console.log ("validate result: " + r);
+}
 
 process.exit (0);
 

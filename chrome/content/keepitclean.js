@@ -127,9 +127,13 @@ keepitclean.every_page_load = function (ev) {
     dump (html.substr (0, 15));
     dump ("\n");
 
-    var results = "validation: " + new Date ();
+    var results = h5val.validate (html);
 
-    keepitclean.set_status (0, results);
+    if (results == null) {
+	keepitclean.set_status (1, "ok");
+    } else {
+	keepitclean.set_status (0, results);
+    }
 } 
 
 

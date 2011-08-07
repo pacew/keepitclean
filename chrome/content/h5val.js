@@ -138,15 +138,21 @@ h5val.validate_children = function (indent, parent_tag_info, inf) {
 		h5val.getc (inf);
 		s = inf.data.substr (inf.off, 20);
 		parts = h5val.regexp_tag.exec (s);
-		if (! parts)
-		    return "close tag syntax error: junk after less-than, slash";
+		if (! parts) {
+		    return ("close tag syntax error:"
+			    + "junk after less-than, slash");
+		}
 		tag_name = parts[1];
 		inf.off += tag_name.length;
 		c = h5val.getc (inf);
-		if (c != ">")
-		    return "close tag syntax error: junk before final greater-than";
-		if (parent_tag_info.name != tag_name)
-		    return "incorrect close tag: got " + tag_name + "; expected " + parent_tag_info.name;
+		if (c != ">") {
+		    return ("close tag syntax error:"
+			    + "junk before final greater-than");
+		}
+		if (parent_tag_info.name != tag_name) {
+		    return ("incorrect close tag: got "
+			    + tag_name + "; expected " + parent_tag_info.name);
+		}
 		return null;
 	    }
 
@@ -296,12 +302,10 @@ h5val.mktags ("base basefont body br button canvas dir div dl embed fieldset");
 h5val.mktags ("font form frame frameset head h1 h2 h3 h4 h5 h6 html hr iframe");
 h5val.mktags ("img input keygen label li link map menu meta del ins object ol");
 h5val.mktags ("optgroup option output p param pre plaintext q blockquote");
-h5val.mktags ("script select source span style table caption td th col colgroup");
-h5val.mktags ("tr tfoot thead tbody textarea time title track ul bgsound");
-h5val.mktags ("isindex bq nextid multicol spacer  noframes video");
+h5val.mktags ("script select source span style table caption td th col");
+h5val.mktags ("colgroup tr tfoot thead tbody textarea time title track");
+h5val.mktags ("ul bgsound isindex bq nextid multicol spacer  noframes video");
 */
-
-
 
 
 h5val.validate_attrs = function (tag_info, attrs) {
@@ -314,21 +318,24 @@ h5val.validate = function (str) {
     if (! parts)
 	return "missing doctype";
 
-    inf = {};
+    var inf = {};
     inf.data = str.substr (parts[1].length);
     inf.off = 0;
     inf.limit = str.length;
     inf.linenum = 1;
 
-    h5val.log ("\n\n");
-    h5val.log ("validating...");
     var result = h5val.validate_children ("", null, inf);
     if (result && result != h5val.eof) {
-	h5val.log (inf.linenum + ": " + result);
+	result = "line:" + inf.linenum + ": " + result;
     } else {
-	h5val.log ("validate ok");
+	result = null;
     }
+
+    return (result);
 }
 
-exports.validate = h5val.validate;
+/* for testing under command line node.js */
+if (typeof exports != "undefined") {
+    exports.validate = h5val.validate;
+}
 

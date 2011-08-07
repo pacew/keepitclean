@@ -6,5 +6,6 @@
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
   <script src="keepitclean.js"/>
+  <script src="h5val.js"/>
 
 </overlay>
