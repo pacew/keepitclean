@@ -96,6 +96,8 @@ h5val.valid_entity = function (str) {
     case "lt": case "gt": case "amp": case "cent": case "pound": 
     case "yen": case "euro": case "sect": case "copy": case "reg": 
     case "trade": case "nbsp": case "quot": case "iquest":
+    case "rsquo": case "lsquo":
+    case "rdquo": case "ldquo":
 	return (1);
     default:
 	if (str[0] == "#")
@@ -283,30 +285,29 @@ h5val.mktags = function (str, block, may_contain_block) {
     }
 }
 
+/* roughly placed ... will need to refine */
+
 /* blocks that can contain blocks */
 h5val.mktags ("html head meta link title body div form", 1, 1);
-h5val.mktags ("fieldset ul li", 1, 1);
+h5val.mktags ("fieldset ul li dd noframes noscript noembed", 1, 1);
+h5val.mktags ("header footer article aside section nav figure", 1, 1);
+h5val.mktags ("figcaption mark ruby rt rp applet area", 1, 1);
+h5val.mktags ("base basefont body dl embed fieldset form frame frameset", 1, 1);
+h5val.mktags ("iframe li link map menu meta object ol", 1, 1);
+h5val.mktags ("optgroup option output param script select source", 1, 1);
+h5val.mktags ("style table caption td th col colgroup tr tfoot thead", 1, 1);
+h5val.mktags ("tbody ul bgsound isindex multicol noframes", 1, 1);
 
 /* blocks that can't contain other blocks */
-h5val.mktags ("p h1 h2 h3 h4 h5 h6 label br hr script", 1, 0);
+h5val.mktags ("p h1 h2 h3 h4 h5 h6 label br hr dt center", 1, 0);
+h5val.mktags ("blockquote textarea", 1, 0);
 
 /* inlines */
-h5val.mktags ("a span input", 0, 0);
-
-/*
-h5val.mktags ("dd dt tt i b u s strike big small em strong dfn code samp");
-h5val.mktags ("kbd var cite acronym abbr sub sup bdo center address noframes");
-h5val.mktags ("wbr noscript noembed header footer article aside section");
-h5val.mktags ("nav figure figcaption mark ruby rt rp a applet audio area");
-h5val.mktags ("base basefont body br button canvas dir div dl embed fieldset");
-h5val.mktags ("font form frame frameset head h1 h2 h3 h4 h5 h6 html hr iframe");
-h5val.mktags ("img input keygen label li link map menu meta del ins object ol");
-h5val.mktags ("optgroup option output p param pre plaintext q blockquote");
-h5val.mktags ("script select source span style table caption td th col");
-h5val.mktags ("colgroup tr tfoot thead tbody textarea time title track");
-h5val.mktags ("ul bgsound isindex bq nextid multicol spacer  noframes video");
-*/
-
+h5val.mktags ("a span input tt i b u s strike big small em", 0, 0);
+h5val.mktags ("strong dfn code samp kbd var cite acronym", 0, 0);
+h5val.mktags ("abbr sub sup bdo address wbr br button canvas dir", 0, 0);
+h5val.mktags ("font img input keygen label del ins pre plaintext q", 0, 0);
+h5val.mktags ("time title track bq nextid spacer video audio", 0, 0);
 
 h5val.validate_attrs = function (tag_info, attrs) {
     return h5val.has_children;

@@ -4,6 +4,9 @@
     <em:id>keepitclean@pacew.org</em:id>
     <em:type>2</em:type>
     <em:name>Keep It Clean</em:name>
+    <em:description>
+      Simple (but incomplete) html validator in pure javascript
+    </em:description>
     <em:version>0.1</em:version>
     <em:creator>Pace Willisson</em:creator>
     <em:contributor></em:contributor>
