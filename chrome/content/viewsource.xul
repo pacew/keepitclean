@@ -7,9 +7,8 @@
   <script src="viewsource.js"/>
 
   <statusbar id="status-bar">
-    <vbox>
-      <label id="keepitclean-message" value="xyzzy" />
-    </vbox>
+    <statusbarpanel id="keepitclean-message" label="validation status" />
+    <spacer flex="1000"/>
   </statusbar>
   
 </overlay>
