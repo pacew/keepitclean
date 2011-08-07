@@ -33,33 +33,43 @@ keepitclean.onFirefoxLoad = function(event) {
 window.addEventListener("load", function () { keepitclean.onFirefoxLoad(); }, false);
 
 keepitclean.set_status = function (flag) {
+    var msg, style;
+
     if (flag == 0) {
-	keepitclean.toolbar_icon.value = "validation error " + keepitclean.count;
-	keepitclean.toolbar_icon.setAttribute ("style", "color:red");
+	msg = "validation error " + keepitclean.count;
+	style = "color:red";
     } else {
-	keepitclean.toolbar_icon.value = "validate ok " + keepitclean.count;
-	keepitclean.toolbar_icon.setAttribute ("style", "color:green");
+	msg = "validate ok " + keepitclean.count;
+	style = "color:green";
     }
+
+    keepitclean.toolbar_icon.value = msg;
+    keepitclean.toolbar_icon.setAttribute ("style", style);
+
+    keepitclean.validation_result = msg;
 }
 
-gBrowser.addEventListener ("load",
-			   function (ev) {
-			       dump ("gBrowser load\n");
+gBrowser.addEventListener (
+    "load",
+    function (ev) {
+	dump ("gBrowser load event\n");
+	
+	if (! keepitclean || ! keepitclean.ready)
+	    return;
 
-			       if (! keepitclean || ! keepitclean.ready)
-				   return;
+	var doc = ev.originalTarget;
 
-			       var doc = ev.originalTarget;
+	if (! doc instanceof HTMLDocument)
+	    return;
 
-			       if (! doc instanceof HTMLDocument)
-				   return;
+	while (doc.defaultView.frameElement)
+	    doc = doc.defaultView.frameElement.ownerDocument;
 
-			       while (doc.defaultView.frameElement)
-				   doc = doc.defaultView.frameElement.ownerDocument;
+	dump ("loaded " + doc + "\n");			       
 
-			       dump ("loaded " + doc + "\n");			       
+	window.foobar = "foobar\n";
 
-			       keepitclean.count++;
-			       keepitclean.set_status (keepitclean.count & 1);
-			   }, 
-			   true);
+	keepitclean.count++;
+	keepitclean.set_status (keepitclean.count & 1);
+    }, 
+    true);

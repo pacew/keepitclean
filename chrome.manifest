@@ -5,4 +5,6 @@ locale    keepitclean   en-US         chrome/locale/en-US/
 
 overlay   chrome://browser/content/browser.xul   chrome://keepitclean/content/overlay.xul
 
+overlay   chrome://global/content/viewSource.xul chrome://keepitclean/content/viewsource.xul
+
 style chrome://global/content/customizeToolbar.xul chrome://keepitclean/skin/overlay.css

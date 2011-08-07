@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="chrome://keepitclean/skin/overlay.css" type="text/css"?>
+<!DOCTYPE overlay SYSTEM "chrome://keepitclean/locale/overlay.dtd">
+<overlay id="keepitclean-viewsource"
+	 xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+  <script src="viewsource.js"/>
+
+  <statusbar id="status-bar">
+    <vbox>
+      <label id="keepitclean-message" value="xyzzy" />
+    </vbox>
+  </statusbar>
+  
+</overlay>
