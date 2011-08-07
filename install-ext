@@ -16,4 +16,6 @@ then
     exit 1
 fi
 
+rm -f ${extensions_dir}/keepitclean@pacew.org.xpi
+
 pwd > ${extensions_dir}/keepitclean@pacew.org
