@@ -2,8 +2,7 @@
 <?xml-stylesheet href="chrome://keepitclean/skin/overlay.css" type="text/css"?>
 <!DOCTYPE overlay SYSTEM "chrome://keepitclean/locale/overlay.dtd">
 <overlay id="keepitclean-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-  <script src="overlay.js"/>
-  <script src="val3.js"/>
+  <script src="keepitclean.js"/>
 
   <toolbarpalette id="BrowserToolbarPalette">
     <toolbarbutton id="keepitclean-toolbar-button"
