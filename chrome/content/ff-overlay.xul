@@ -3,7 +3,6 @@
 <!DOCTYPE overlay SYSTEM "chrome://keepitclean/locale/overlay.dtd">
 <overlay id="keepitclean-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
   <script src="overlay.js"/>
-  <script src="ff-overlay.js"/>
   <script src="val3.js"/>
 
   <toolbarpalette id="BrowserToolbarPalette">

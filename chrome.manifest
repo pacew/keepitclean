@@ -3,6 +3,6 @@ skin      keepitclean   classic/1.0   chrome/skin/
 locale    keepitclean   en-US         chrome/locale/en-US/
 
 
-overlay   chrome://browser/content/browser.xul   chrome://keepitclean/content/ff-overlay.xul
+overlay   chrome://browser/content/browser.xul   chrome://keepitclean/content/overlay.xul
 
 style chrome://global/content/customizeToolbar.xul chrome://keepitclean/skin/overlay.css
