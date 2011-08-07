@@ -1,8 +1,6 @@
 var keepitclean = {};
 
 keepitclean.initial_load = function(ev) {
-    dump ("onFirefoxLoad()\n");
-
     // Find the most recently used window
     var mediator
 	= Components.classes['@mozilla.org/appshell/window-mediator;1']
@@ -27,18 +25,79 @@ keepitclean.initial_load = function(ev) {
     keepitclean.ready = 1;
 };
 
-window.addEventListener("load",
-			function () {keepitclean.initial_load();},
-			false);
+/* tidyBrowser.js:getHtmlFromCache() */
+keepitclean.get_html_from_cache = function () {
+    var doc = window.content.document;
 
-keepitclean.set_status = function (flag) {
-    var msg, style;
+    var webNav = null;
+
+    var win = doc.defaultView;
+    if (win == window) {
+	win = _content;
+    }
+
+    var ifRequestor
+	= win.QueryInterface(Components.interfaces.nsIInterfaceRequestor);
+
+    webNav = ifRequestor.getInterface(Components.interfaces.nsIWebNavigation);
+
+    var PageLoader
+	= webNav.QueryInterface (Components.interfaces.nsIWebPageDescriptor);
+
+    var pageCookie = PageLoader.currentDescriptor;
+
+    var shEntry = pageCookie.QueryInterface(Components.interfaces.nsISHEntry);
+
+    var url = doc.URL;
+    var urlCharset = doc.characterSet;
+
+    var ios = Components.classes["@mozilla.org/network/io-service;1"]
+	.getService(Components.interfaces.nsIIOService);
+    var channel = ios.newChannel (url, urlCharset, null);
+
+    channel.loadFlags |= Components.interfaces.nsIRequest.VALIDATE_NEVER;
+    channel.loadFlags |= Components.interfaces.nsIRequest.LOAD_FROM_CACHE;
+    channel.loadFlags
+	|= Components.interfaces.nsICachingChannel.LOAD_ONLY_FROM_CACHE;
+
+    var cacheChannel
+	= channel.QueryInterface(Components.interfaces.nsICachingChannel);
+    
+    cacheChannel.cacheKey = shEntry.cacheKey;
+
+    var stream = channel.open ();
+
+    const scriptableStream
+	= Components.classes["@mozilla.org/scriptableinputstream;1"]
+	.createInstance(Components.interfaces.nsIScriptableInputStream);
+
+    scriptableStream.init (stream);
+
+    var s = "";
+    while (scriptableStream.available () > 0) {
+	s += scriptableStream.read (scriptableStream.available ());
+    }
+
+    scriptableStream.close ();
+    stream.close ();
+
+    var ucConverter
+	= Components.classes["@mozilla.org/intl/scriptableunicodeconverter"]
+	.getService (Components.interfaces.nsIScriptableUnicodeConverter);
+    ucConverter.charset = urlCharset;
+    var s2 = ucConverter.ConvertToUnicode (s);
+
+    return (s2);
+}
+
+keepitclean.set_status = function (flag, msg) {
+    var style;
+
+    msg = msg + " (" + keepitclean.count + ")";
 
     if (flag == 0) {
-	msg = "validation error " + keepitclean.count;
 	style = "color:red";
     } else {
-	msg = "validate ok " + keepitclean.count;
 	style = "color:green";
     }
 
@@ -49,8 +108,6 @@ keepitclean.set_status = function (flag) {
 }
 
 keepitclean.every_page_load = function (ev) {
-    dump ("gBrowser load event\n");
-	
     if (! keepitclean || ! keepitclean.ready)
 	return;
 
@@ -63,12 +120,23 @@ keepitclean.every_page_load = function (ev) {
 	doc = doc.defaultView.frameElement.ownerDocument;
 
     dump ("loaded " + doc + "\n");			       
-
-    window.foobar = "foobar\n";
-
     keepitclean.count++;
-    keepitclean.set_status (keepitclean.count & 1);
+
+    var html = keepitclean.get_html_from_cache ();
+    dump ("html = ");
+    dump (html.substr (0, 15));
+    dump ("\n");
+
+    var results = "validation: " + new Date ();
+
+    keepitclean.set_status (0, results);
 } 
+
+
+
+window.addEventListener("load",
+			function () {keepitclean.initial_load();},
+			false);
 
 gBrowser.addEventListener ("load",
 			   function (ev) { keepitclean.every_page_load (ev); },
