@@ -122,7 +122,7 @@ h5val.validate_entity = function (inf) {
 }
 
 h5val.validate_children = function (indent, parent_tag_info, inf) {
-    var s, part, ent_name, tag_name, r, tag_info;
+    var s, part, ent_name, tag_name, r, tag_info, parts;
     while (1) {
 	c = h5val.getc (inf);
 	if (c == h5val.eof) {
