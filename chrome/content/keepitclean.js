@@ -1,4 +1,5 @@
 var keepitclean = {};
+keepitclean.verbose = 0;
 
 keepitclean.initial_load = function(ev) {
     // Find the most recently used window
@@ -93,7 +94,9 @@ keepitclean.get_html_from_cache = function () {
 keepitclean.set_status = function (flag, msg) {
     var style;
 
-    msg = msg + " (" + keepitclean.count + ")";
+    if (0) {
+	msg = msg + " (" + keepitclean.count + ")";
+    }
 
     if (flag == 0) {
 	style = "color:red";
@@ -119,13 +122,12 @@ keepitclean.every_page_load = function (ev) {
     while (doc.defaultView.frameElement)
 	doc = doc.defaultView.frameElement.ownerDocument;
 
-    dump ("loaded " + doc + "\n");			       
+    if (keepitclean.verbose)
+	dump ("loaded " + doc + "\n");			       
+
     keepitclean.count++;
 
     var html = keepitclean.get_html_from_cache ();
-    dump ("html = ");
-    dump (html.substr (0, 15));
-    dump ("\n");
 
     var results = h5val.validate (html);
 
