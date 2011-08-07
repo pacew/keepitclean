@@ -23,12 +23,32 @@ keepitclean.onFirefoxLoad = function(event) {
     addonBar.appendChild(newItem);
 
     itemLabel.value = "Hello world";
+
+    keepitclean.count = 0;
+    keepitclean.toolbar_icon = itemLabel;
+
+    keepitclean.ready = 1;
 };
 
 window.addEventListener("load", function () { keepitclean.onFirefoxLoad(); }, false);
 
+keepitclean.set_status = function (flag) {
+    if (flag == 0) {
+	keepitclean.toolbar_icon.value = "validation error " + keepitclean.count;
+	keepitclean.toolbar_icon.setAttribute ("style", "color:red");
+    } else {
+	keepitclean.toolbar_icon.value = "validate ok " + keepitclean.count;
+	keepitclean.toolbar_icon.setAttribute ("style", "color:green");
+    }
+}
+
 gBrowser.addEventListener ("load",
 			   function (ev) {
+			       dump ("gBrowser load\n");
+
+			       if (! keepitclean || ! keepitclean.ready)
+				   return;
+
 			       var doc = ev.originalTarget;
 
 			       if (! doc instanceof HTMLDocument)
@@ -38,5 +58,8 @@ gBrowser.addEventListener ("load",
 				   doc = doc.defaultView.frameElement.ownerDocument;
 
 			       dump ("loaded " + doc + "\n");			       
+
+			       keepitclean.count++;
+			       keepitclean.set_status (keepitclean.count & 1);
 			   }, 
 			   true);
