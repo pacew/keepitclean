@@ -1,5 +1,6 @@
 var keepitclean = {};
 keepitclean.verbose = 0;
+keepitclean.enabled = 1;
 
 keepitclean.initial_load = function(ev) {
     // Find the most recently used window
@@ -18,13 +19,24 @@ keepitclean.initial_load = function(ev) {
     newItem.appendChild(itemLabel);
     addonBar.appendChild(newItem);
 
-    itemLabel.value = "validator loading...";
+    itemLabel.value = "validation ready";
+
+    itemLabel.addEventListener("click",
+			       function () {keepitclean.toggle();},
+			       false);
+
 
     keepitclean.count = 0;
     keepitclean.toolbar_icon = itemLabel;
 
     keepitclean.ready = 1;
-};
+}
+
+keepitclean.toggle = function () {
+    dump ("keepitclean.toggle()\n");
+    keepitclean.enabled = keepitclean.enabled ? 0 : 1;
+    keepitclean.set_status (0, "");
+}
 
 /* tidyBrowser.js:getHtmlFromCache() */
 keepitclean.get_html_from_cache = function () {
@@ -94,6 +106,18 @@ keepitclean.get_html_from_cache = function () {
 keepitclean.set_status = function (flag, msg) {
     var style;
 
+    if (keepitclean.enabled == 0) {
+	keepitclean.toolbar_icon.value = "validation disabled";
+	keepitclean.toolbar_icon.setAttribute ("style", "");
+	return;
+    }
+
+    if (msg == null || msg == "") {
+	keepitclean.toolbar_icon.value = "validation ready";
+	keepitclean.toolbar_icon.setAttribute ("style", "");
+	return;
+    }
+
     if (0) {
 	msg = msg + " (" + keepitclean.count + ")";
     }
@@ -111,7 +135,7 @@ keepitclean.set_status = function (flag, msg) {
 }
 
 keepitclean.every_page_load = function (ev) {
-    if (! keepitclean || ! keepitclean.ready)
+    if (! keepitclean || ! keepitclean.ready || ! keepitclean.enabled)
 	return;
 
     var doc = ev.originalTarget;
