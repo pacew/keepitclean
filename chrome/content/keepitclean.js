@@ -36,6 +36,9 @@ keepitclean.toggle = function () {
     dump ("keepitclean.toggle()\n");
     keepitclean.enabled = keepitclean.enabled ? 0 : 1;
     keepitclean.set_status (0, "");
+
+    var win = window.open ("chrome://keepitclean/content/view.xul", "view",
+			   "chrome,width=600,height=400");
 }
 
 /* tidyBrowser.js:getHtmlFromCache() */
