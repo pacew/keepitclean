@@ -9,12 +9,7 @@ then
 fi
 
 extensions_dir=${profile_dir}/extensions
-
-if [ ! -d ${extensions_dir} ]
-then
-    echo "${extensions_dir} does not exist"
-    exit 1
-fi
+mkdir -p ${extensions_dir}
 
 rm -f ${extensions_dir}/keepitclean@pacew.org.xpi
 

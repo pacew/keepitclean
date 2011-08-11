@@ -32,13 +32,31 @@ keepitclean.initial_load = function(ev) {
     keepitclean.ready = 1;
 }
 
+function dump_val (name, val) {
+    dump (name);
+    dump (" = ");
+    if (val)
+	dump (val);
+    else
+	dump ("(null)");
+    dump ("\n");
+}
+
+keepitclean.view_load = function (win) {
+    var elt = win.document.getElementById ("kic-view");
+    elt.setAttribute ("value", "validation results...");
+}
+
+
 keepitclean.toggle = function () {
     dump ("keepitclean.toggle()\n");
-    keepitclean.enabled = keepitclean.enabled ? 0 : 1;
-    keepitclean.set_status (0, "");
 
     var win = window.open ("chrome://keepitclean/content/view.xul", "view",
 			   "chrome,width=600,height=400");
+
+    win.addEventListener("load",
+			 function () {keepitclean.view_load(win);},
+			 false);
 }
 
 /* tidyBrowser.js:getHtmlFromCache() */
