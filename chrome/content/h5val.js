@@ -20,10 +20,13 @@ h5val.block_elts = { "address":1, "blockquote":1, "center":1, "dir":1,
 
 h5val.restricted_elts = {
     "applet": { "BLOCK":1 },
+    "base": {},
     "blockquote": { "BLOCK":1 },
     "body": { "BLOCK":1 },
     "button": { "BLOCK":1 },
+    "caption": {},
     "center": { "BLOCK":1 },
+    "col": {},
     "colgroup": { "col":1 },
     "dd": { "BLOCK":1 },
     "del": { "BLOCK":1 },
@@ -38,14 +41,18 @@ h5val.restricted_elts = {
     "iframe": { "BLOCK":1 },
     "ins": { "BLOCK":1 },
     "li": { "BLOCK":1 },
+    "link": {},
     "map": { "BLOCK":1 },
     "menu": { "BLOCK":1 },
+    "meta": {},
     "noframes": { "BLOCK":1 },
     "noscript": { "BLOCK":1 },
     "object": { "BLOCK":1 },
     "ol": { "li":1 },
     "optgroup": { "option":1 },
+    "option": {},
     "select": { "optgroup":1, "option":1 },
+    "style": {},
     "table": {"caption":1, "col":1, "colgroup":1,
 	      "thead":1, "tfoot":1, "tbody":1},
     "tbody": { "tr":1 },
@@ -169,35 +176,51 @@ h5val.getc = function (inf) {
 	    return (h5val.eof);
 
 	c = inf.data[inf.off++];
-    
 	if (c == "\n")
 	    inf.linenum++;
 
-	/* check for <!-- */
-	if (c == "<"
-	    && inf.data[inf.off] == "!"
-	    && inf.data[inf.off + 1] == "-"
-	    && inf.data[inf.off + 2] == "-") {
-	    inf.off += 3;
-	    while (inf.off < inf.limit) {
-		c = inf.data[inf.off++];
-
-		if (c == "\n")
-		    inf.linenum++;
-		
-		if (c == "-"
-		    && inf.data[inf.off] == '-'
-		    && inf.data[inf.off + 1] == '>') {
-		    inf.off += 2;
-		    break;
+	/* check for <! stuff */
+	if (c == "<" && h5val.peekc (inf) == "!") {
+	    h5val.unget (inf);
+	    if (inf.data.substr (inf.off, 4) == "<!--") {
+		inf.off += 4;
+		while (inf.off < inf.limit) {
+		    if (inf.data[inf.off] == "-"
+			&& inf.data.substr (inf.off, 3) == "-->") {
+			inf.off += 3;
+			break;
+		    }
+		    h5val.getc (inf);
 		}
+	    } else if (inf.data.substr (inf.off, 9) == "<![CDATA[") {
+		inf.off += 9;
+		while (inf.off < inf.limit) {
+		    if (inf.data[inf.off] == "]"
+			& inf.data.substr (inf.off, 3) == "]]>") {
+			inf.off += 3;
+			break;
+		    }
+		    h5val.getc (inf);
+		}
+	    } else if (inf.data.substr (inf.off, 9) == "<!DOCTYPE") {
+		inf.off += 9;
+		while ((c = h5val.getc (inf)) != h5val.eof) {
+		    if (c == ">")
+			break;
+		}
+	    } else {
+		inf.errmsg = "invalid <! construction";
+		return (h5val.eof);
 	    }
-	} else {
-	    if (h5val.verbose >= 9)
-		console.log ("getc = " + c);
-	    return (c);
+	    continue;
 	}
+
+	break;
     }
+
+    if (h5val.verbose >= 9)
+	h5val.log ("getc = " + c);
+    return (c);
 }
 
 h5val.peekc = function (inf) {
@@ -402,32 +425,25 @@ h5val.validate_attrs = function (tag_name, attrs) {
 }
 
 h5val.validate = function (str) {
-    var doctype = new RegExp ("^(<!DOCTYPE [^>]*>)");
-    var parts = doctype.exec (str);
-    if (! parts)
-	return "missing doctype";
-
     var inf = {};
     inf.data = str;
     inf.off = 0;
     inf.limit = str.length;
     inf.linenum = 1;
+    inf.errmsg = "";
 
-    /* discard DOCTYPE */
-    while ((c = h5val.getc (inf)) != h5val.eof) {
-	if (c == ">")
-	    break;
-    }
-
-    var result = h5val.validate_children ("", null, inf);
-    if (! result || result == h5val.eof)
+    var errmsg = h5val.validate_children ("", null, inf);
+    if (errmsg == null || errmsg == h5val.eof)
 	return null;
+
+    if (inf.errmsg)
+	errmsg = inf.errmsg;
 
     h5val.verbose = 0;
 
     var ret = {};
     ret.linenum = inf.linenum;
-    ret.summary = result;
+    ret.summary = errmsg;
     ret.lines = [];
     var output_linenum = 0;
 
@@ -443,7 +459,10 @@ h5val.validate = function (str) {
     var cur_linenum = inf.linenum;
     var cur_line = "";
 
-    while ((c = h5val.getc (inf)) != h5val.eof) {
+    while (inf.off < inf.limit) {
+	c = inf.data[inf.off++];
+	if (c == "\n")
+	    inf.linenum++;
 	if (inf.linenum > end_linenum)
 	    break;
 
