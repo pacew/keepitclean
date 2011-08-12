@@ -46,8 +46,19 @@ function dump_val (name, val) {
 }
 
 keepitclean.view_load = function (win) {
-    var elt = win.document.getElementById ("kic-view");
-    elt.setAttribute ("value", "validation results: " + new Date ());
+    var XHTML_NS = "http://www.w3.org/1999/xhtml";
+    var doc = win.document;
+    var parent = doc.getElementById ("kic-view");
+    //    parent.setAttribute ("value", h5val.results_full);
+    var arr = h5val.results_full.split ("\n");
+    var len = arr.length;
+    for (var i = 0; i < len; i++) {
+	var elt = doc.createElementNS (XHTML_NS, "div");
+	elt.setAttribute ("kic-line" + i, "kic-view-line");
+	elt.setAttribute ("class", "kic-view-line");
+	elt.appendChild (doc.createTextNode (arr[i]));
+	parent.appendChild (elt);
+    }
 }
 
 
@@ -190,6 +201,9 @@ keepitclean.every_page_load = function (ev) {
 	h5val.results_summary = "";
 	keepitclean.set_status (1, "ok");
     } else {
+	dump ("results full: \n");
+	dump (h5val.results_full);
+
 	/* pull off the first line */
 	var re = new RegExp (".*");
 	h5val.results_summary = re.exec (h5val.results_full);

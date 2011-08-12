@@ -325,10 +325,15 @@ h5val.validate = function (str) {
 	return "missing doctype";
 
     var inf = {};
-    inf.data = str.substr (parts[1].length);
+    inf.data = str;
     inf.off = 0;
     inf.limit = str.length;
     inf.linenum = 1;
+
+    while ((c = h5val.getc (inf)) != h5val.eof) {
+	if (c == ">")
+	    break;
+    }
 
     var result = h5val.validate_children ("", null, inf);
     if (! result || result == h5val.eof)
@@ -336,24 +341,30 @@ h5val.validate = function (str) {
 
     result = "line:" + inf.linenum + ": " + result + "\n";
 
-    var nlines = 3;
+    var start_linenum = inf.linenum - 5;
+    var end_linenum = inf.linenum + 5;
 
-    end_linenum = inf.linenum;
     while ((c = h5val.unget (inf)) != h5val.eof) {
-	if (end_linenum - inf.linenum >= nlines)
+	if (inf.linenum <= start_linenum)
 	    break;
     }
+    h5val.getc (inf);
     
-    result += "" + inf.linenum + ": ";
+    var need_prefix = 1;
 
     while ((c = h5val.getc (inf)) != h5val.eof) {
-	if (inf.linenum >= end_linenum)
+	if (inf.linenum > end_linenum)
 	    break;
-	if (c == "\n") {
-	    result += "\n";
+
+	if (need_prefix) {
+	    need_prefix = 0;
 	    result += "" + inf.linenum + ": ";
-	} else {
-	    result += c;
+	}
+	    
+	result += c;
+
+	if (c == "\n") {
+	    need_prefix = 1;
 	}
     }
 

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://keepitclean/skin/view.css" type="text/css"?>
 
 <!DOCTYPE dialog SYSTEM "chrome://keepitclean/locale/about.dtd">
 
@@ -11,7 +12,8 @@
     <vbox>
       <text value="Validation results"
 	    style="font-weight: bold; font-size: x-large;"/>
-      <text id='kic-view' value="version 1.0"/>
+      <vbox id='kic-view'>
+      </vbox>
     </vbox>
   </groupbox>
 </dialog>
