@@ -34,26 +34,14 @@ keepitclean.initial_load = function(ev) {
     keepitclean.ready = 1;
 }
 
-function dump_val (name, val) {
-    dump (name);
-    dump (" = ");
-    if (val)
-	dump (val);
-    else
-	dump ("(null)");
-    dump ("\n");
-}
-
 keepitclean.view_load = function (win) {
     var XHTML_NS = "http://www.w3.org/1999/xhtml";
     var doc = win.document;
     var parent = doc.getElementById ("kic-view");
 
-    var elt_summary = doc.createElementNS (XHTML_NS, "h2");
-    elt_summary.appendChild (doc.createTextNode (keepitclean.summary));
-    parent.appendChild (elt_summary);
-
-    var len = keepitclean.results.lines.length;
+    var len = 0;
+    if (keepitclean.results)
+	len = keepitclean.results.lines.length;
 
     for (var i = 0; i < len; i++) {
 	var arr = keepitclean.results.lines[i];
@@ -69,7 +57,12 @@ keepitclean.view_load = function (win) {
 	elt_div.appendChild (elt_linenum);
 
 	var elt_text = doc.createElementNS (XHTML_NS, "div");
-	elt_text.setAttribute ("class", "kic-view-text");
+
+	var classes = "kic-view-text";
+	if (keepitclean.results.linenum == linenum)
+	    classes += " kic-view-highlight";
+	elt_div.setAttribute ("class", classes);
+
 	elt_text.appendChild (doc.createTextNode (text));
 	elt_div.appendChild (elt_text);
 
@@ -80,6 +73,12 @@ keepitclean.view_load = function (win) {
 	parent.appendChild (elt_clear);
     }
 
+    var elt_summary = doc.createElementNS (XHTML_NS, "h2");
+    var summary = keepitclean.summary;
+    if (summary) {
+	elt_summary.appendChild (doc.createTextNode (summary));
+	parent.appendChild (elt_summary);
+    }
 }
 
 

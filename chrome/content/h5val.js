@@ -373,7 +373,7 @@ h5val.validate = function (str) {
     }
 
     if (cur_line)
-	ret.lines[output_linenum++] = array (cur_linenum, cur_line);
+	ret.lines[output_linenum++] = [cur_linenum, cur_line];
 
     return (ret);
 }

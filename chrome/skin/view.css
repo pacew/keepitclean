@@ -1,5 +1,8 @@
+.kic-view {
+    background: white;
+}
+
 .kic-view-line {
-    color: red;
     width: 100%;
     font-family: monospace;
 }
@@ -14,9 +17,13 @@
 
 .kic-view-text {
     float: left;
-    color: black;
     white-space: pre;
 }
+
+.kic-view-highlight {
+    color: red;
+}
+
 
 .kic-view-clear {
     clear: both;

@@ -8,12 +8,11 @@
 <dialog title="keepitclean results"
 	buttons="accept" 
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-  <groupbox align="center" orient="horizontal">
+  <groupbox align="center" orient="horizontal" class="kic-view">
     <vbox>
       <text value="Validation results"
 	    style="font-weight: bold; font-size: x-large;"/>
-      <vbox id='kic-view'>
-      </vbox>
+      <vbox id='kic-view' />
     </vbox>
   </groupbox>
 </dialog>
