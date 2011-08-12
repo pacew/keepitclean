@@ -171,56 +171,60 @@ h5val.isspace["\n"] = 1;
 h5val.getc = function (inf) {
     var c;
 
-    while (1) {
-	if (inf.off >= inf.limit)
-	    return (h5val.eof);
+    if (inf.off >= inf.limit)
+	return h5val.eof;
 
+    if (inf.data[inf.off] != "<" || inf.data[inf.off+1] != "!") {
 	c = inf.data[inf.off++];
 	if (c == "\n")
 	    inf.linenum++;
-
-	/* check for <! stuff */
-	if (c == "<" && h5val.peekc (inf) == "!") {
-	    h5val.unget (inf);
-	    if (inf.data.substr (inf.off, 4) == "<!--") {
-		inf.off += 4;
-		while (inf.off < inf.limit) {
-		    if (inf.data[inf.off] == "-"
-			&& inf.data.substr (inf.off, 3) == "-->") {
-			inf.off += 3;
-			break;
-		    }
-		    h5val.getc (inf);
-		}
-	    } else if (inf.data.substr (inf.off, 9) == "<![CDATA[") {
-		inf.off += 9;
-		while (inf.off < inf.limit) {
-		    if (inf.data[inf.off] == "]"
-			& inf.data.substr (inf.off, 3) == "]]>") {
-			inf.off += 3;
-			break;
-		    }
-		    h5val.getc (inf);
-		}
-	    } else if (inf.data.substr (inf.off, 9) == "<!DOCTYPE") {
-		inf.off += 9;
-		while ((c = h5val.getc (inf)) != h5val.eof) {
-		    if (c == ">")
-			break;
-		}
-	    } else {
-		inf.errmsg = "invalid <! construction";
-		return (h5val.eof);
-	    }
-	    continue;
-	}
-
-	break;
+	return (c);
     }
 
-    if (h5val.verbose >= 9)
-	h5val.log ("getc = " + c);
-    return (c);
+    if (inf.data.substr (inf.off, 4) == "<!--") {
+	inf.off += 4;
+	while (inf.off < inf.limit) {
+	    if (inf.data[inf.off] == "-"
+		&& inf.data.substr (inf.off, 3) == "-->") {
+		inf.off += 3;
+		break;
+	    }
+	    c = inf.data[inf.off++];
+	    if (c == "\n")
+		inf.linenum++;
+	}
+	return (" ");
+    }
+
+    if (inf.data.substr (inf.off, 9) == "<![CDATA[") {
+	inf.off += 9;
+	while (inf.off < inf.limit) {
+	    if (inf.data[inf.off] == "]"
+		& inf.data.substr (inf.off, 3) == "]]>") {
+		inf.off += 3;
+		break;
+	    }
+	    c = inf.data[inf.off++];
+	    if (c == "\n")
+		inf.linenum++;
+	}
+	return (" ");
+    }
+
+    if (inf.data.substr (inf.off, 9) == "<!DOCTYPE") {
+	inf.off += 9;
+	while (inf.off < inf.limit) {
+	    c = inf.data[inf.off++];
+	    if (c == "\n")
+		inf.linenum++;
+	    if (c == ">")
+		break;
+	}
+	return (" ");
+    }
+
+    inf.errmsg = "invalid <! construction";
+    return (h5val.eof);
 }
 
 h5val.peekc = function (inf) {
@@ -264,12 +268,18 @@ h5val.validate_entity = function (inf) {
 
     s = inf.data.substr (inf.off, 10);
     parts = h5val.regexp_ent.exec (s);
-    if (! parts)
+    if (! parts) {
+	if (inf.relax_entities)
+	    return null;
 	return "entity syntax error";
+    }
     ent_name = parts[1];
     inf.off += ent_name.length + 1;
-    if (! h5val.valid_entity (ent_name))
+    if (! h5val.valid_entity (ent_name)) {
+	if (inf.relax_entities)
+	    return null;
 	return "invalid entity " + ent_name;
+    }
     return null;
 }
 
@@ -277,6 +287,10 @@ h5val.validate_children = function (indent, parent_tag, inf) {
     if (h5val.verbose)
 	h5val.log (indent+"validate_children("+parent_tag+")");
     var s, part, ent_name, tag_name, r, tag, parts;
+
+    if (parent_tag == "script")
+	inf.relax_entities = 1;
+
     while (1) {
 	c = h5val.getc (inf);
 	if (c == h5val.eof) {
@@ -413,6 +427,7 @@ h5val.validate_tag = function (indent, tag_name, inf) {
 	    if (r)
 		return r;
 	    r = h5val.validate_children (indent, tag_name, inf);
+	    inf.relax_entities = 0;
 	    if (r == h5val.eof)
 		return "unexpected eof looking for end of " + tag_name;
 	    return (r);
@@ -431,6 +446,7 @@ h5val.validate = function (str) {
     inf.limit = str.length;
     inf.linenum = 1;
     inf.errmsg = "";
+    inf.relax_entities = 0;
 
     var errmsg = h5val.validate_children ("", null, inf);
     if (errmsg == null || errmsg == h5val.eof)
