@@ -54,7 +54,6 @@ keepitclean.view_load = function (win) {
     parent.appendChild (elt_summary);
 
     var len = keepitclean.results.lines.length;
-    dump ("output lines " + len + "\n");
 
     for (var i = 0; i < len; i++) {
 	var arr = keepitclean.results.lines[i];
@@ -222,10 +221,11 @@ keepitclean.every_page_load = function (ev) {
     if (keepitclean.results == null) {
 	keepitclean.set_status (1, "ok");
     } else {
-	dump ("results full: \n");
-	dump (keepitclean.results.lines);
+	if (keepitclean.verbose) {
+	    dump ("results full: \n");
+	    dump (keepitclean.results.lines);
+	}
 
-	/* pull off the first line */
 	keepitclean.summary = "" + keepitclean.results.linenum + ": " +
 	    keepitclean.results.summary;
 
