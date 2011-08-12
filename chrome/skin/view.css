@@ -1,3 +1,24 @@
 .kic-view-line {
     color: red;
+    width: 100%;
+    font-family: monospace;
 }
+
+.kic-view-linenum {
+    float: left;
+    width: 2em;
+    color: #666;
+    padding-right: 1em;
+    text-align: right;
+}
+
+.kic-view-text {
+    float: left;
+    color: black;
+    white-space: pre;
+}
+
+.kic-view-clear {
+    clear: both;
+}
+	

@@ -339,7 +339,11 @@ h5val.validate = function (str) {
     if (! result || result == h5val.eof)
 	return null;
 
-    result = "line:" + inf.linenum + ": " + result + "\n";
+    var ret = {};
+    ret.linenum = inf.linenum;
+    ret.summary = result;
+    ret.lines = [];
+    var output_linenum = 0;
 
     var start_linenum = inf.linenum - 5;
     var end_linenum = inf.linenum + 5;
@@ -352,23 +356,26 @@ h5val.validate = function (str) {
     
     var need_prefix = 1;
 
+    var cur_linenum = inf.linenum;
+    var cur_line = "";
+
     while ((c = h5val.getc (inf)) != h5val.eof) {
 	if (inf.linenum > end_linenum)
 	    break;
 
-	if (need_prefix) {
-	    need_prefix = 0;
-	    result += "" + inf.linenum + ": ";
-	}
-	    
-	result += c;
+	cur_line += c;
 
 	if (c == "\n") {
-	    need_prefix = 1;
+	    ret.lines[output_linenum++] = [cur_linenum, cur_line];
+	    cur_linenum = inf.linenum;
+	    cur_line = "";
 	}
     }
 
-    return (result);
+    if (cur_line)
+	ret.lines[output_linenum++] = array (cur_linenum, cur_line);
+
+    return (ret);
 }
 
 /* for testing under command line node.js */

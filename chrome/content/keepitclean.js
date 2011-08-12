@@ -2,8 +2,7 @@ var keepitclean = {};
 keepitclean.verbose = 0;
 keepitclean.enabled = 1;
 keepitclean.view_win = null;
-keepitclean.results_full = "";
-keepitclean.results_summary = "";
+keepitclean.results = "";
 
 keepitclean.initial_load = function(ev) {
     // Find the most recently used window
@@ -49,16 +48,39 @@ keepitclean.view_load = function (win) {
     var XHTML_NS = "http://www.w3.org/1999/xhtml";
     var doc = win.document;
     var parent = doc.getElementById ("kic-view");
-    //    parent.setAttribute ("value", h5val.results_full);
-    var arr = h5val.results_full.split ("\n");
-    var len = arr.length;
+
+    var elt_summary = doc.createElementNS (XHTML_NS, "h2");
+    elt_summary.appendChild (doc.createTextNode (keepitclean.summary));
+    parent.appendChild (elt_summary);
+
+    var len = keepitclean.results.lines.length;
+    dump ("output lines " + len + "\n");
+
     for (var i = 0; i < len; i++) {
-	var elt = doc.createElementNS (XHTML_NS, "div");
-	elt.setAttribute ("kic-line" + i, "kic-view-line");
-	elt.setAttribute ("class", "kic-view-line");
-	elt.appendChild (doc.createTextNode (arr[i]));
-	parent.appendChild (elt);
+	var arr = keepitclean.results.lines[i];
+	var linenum = arr[0];
+	var text = arr[1];
+
+	var elt_div = doc.createElementNS (XHTML_NS, "div");
+	elt_div.setAttribute ("class", "kic-view-line");
+
+	var elt_linenum = doc.createElementNS (XHTML_NS, "div");
+	elt_linenum.setAttribute ("class", "kic-view-linenum");
+	elt_linenum.appendChild (doc.createTextNode ("" + linenum));
+	elt_div.appendChild (elt_linenum);
+
+	var elt_text = doc.createElementNS (XHTML_NS, "div");
+	elt_text.setAttribute ("class", "kic-view-text");
+	elt_text.appendChild (doc.createTextNode (text));
+	elt_div.appendChild (elt_text);
+
+	parent.appendChild (elt_div);
+
+	var elt_clear = doc.createElementNS (XHTML_NS, "div");
+	elt_clear.setAttribute ("class", "kic-view-clear");
+	parent.appendChild (elt_clear);
     }
+
 }
 
 
@@ -195,19 +217,19 @@ keepitclean.every_page_load = function (ev) {
 
     var html = keepitclean.get_html_from_cache ();
 
-    h5val.results_full = h5val.validate (html);
+    keepitclean.results = h5val.validate (html);
 
-    if (h5val.results_full == null) {
-	h5val.results_summary = "";
+    if (keepitclean.results == null) {
 	keepitclean.set_status (1, "ok");
     } else {
 	dump ("results full: \n");
-	dump (h5val.results_full);
+	dump (keepitclean.results.lines);
 
 	/* pull off the first line */
-	var re = new RegExp (".*");
-	h5val.results_summary = re.exec (h5val.results_full);
-	keepitclean.set_status (0, h5val.results_summary);
+	keepitclean.summary = "" + keepitclean.results.linenum + ": " +
+	    keepitclean.results.summary;
+
+	keepitclean.set_status (0, keepitclean.summary);
     }
 } 
 
