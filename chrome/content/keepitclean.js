@@ -2,6 +2,8 @@ var keepitclean = {};
 keepitclean.verbose = 0;
 keepitclean.enabled = 1;
 keepitclean.view_win = null;
+keepitclean.results_full = "";
+keepitclean.results_summary = "";
 
 keepitclean.initial_load = function(ev) {
     // Find the most recently used window
@@ -182,12 +184,16 @@ keepitclean.every_page_load = function (ev) {
 
     var html = keepitclean.get_html_from_cache ();
 
-    var results = h5val.validate (html);
+    h5val.results_full = h5val.validate (html);
 
-    if (results == null) {
+    if (h5val.results_full == null) {
+	h5val.results_summary = "";
 	keepitclean.set_status (1, "ok");
     } else {
-	keepitclean.set_status (0, results);
+	/* pull off the first line */
+	var re = new RegExp (".*");
+	h5val.results_summary = re.exec (h5val.results_full);
+	keepitclean.set_status (0, h5val.results_summary);
     }
 } 
 

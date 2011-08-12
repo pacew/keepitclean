@@ -77,9 +77,14 @@ h5val.peekc = function (inf) {
     return (inf.data[inf.off]);
 }
 
-h5val.ungetc = function (c, inf) {
-    if (inf.off > 0)
-	inf.off--;
+h5val.unget = function (inf) {
+    if (inf.off <= 0)
+	return (h5val.elf);
+    inf.off--;
+    var c = inf.data[inf.off];
+    if (c == "\n")
+	inf.linenum--;
+    return (c);
 }
 
 h5val.skip_whitespace = function (inf) {
@@ -236,7 +241,7 @@ h5val.validate_tag = function (indent, tag_info, inf) {
 			if (c == in_quotes)
 			    break;
 		    } else if (h5val.isspace[c]) {
-			h5val.ungetc (c, inf);
+			h5val.unget (inf);
 			break;
 		    } else if (! h5val.isid[c]) {
 			return "bad char in attrval";
@@ -245,7 +250,7 @@ h5val.validate_tag = function (indent, tag_info, inf) {
 		    attrval += c;
 		}
 	    } else {
-		h5val.ungetc (c, inf);
+		h5val.unget (inf);
 	    }
 
 	    if (h5val.verbose)
@@ -326,10 +331,30 @@ h5val.validate = function (str) {
     inf.linenum = 1;
 
     var result = h5val.validate_children ("", null, inf);
-    if (result && result != h5val.eof) {
-	result = "line:" + inf.linenum + ": " + result;
-    } else {
-	result = null;
+    if (! result || result == h5val.eof)
+	return null;
+
+    result = "line:" + inf.linenum + ": " + result + "\n";
+
+    var nlines = 3;
+
+    end_linenum = inf.linenum;
+    while ((c = h5val.unget (inf)) != h5val.eof) {
+	if (end_linenum - inf.linenum >= nlines)
+	    break;
+    }
+    
+    result += "" + inf.linenum + ": ";
+
+    while ((c = h5val.getc (inf)) != h5val.eof) {
+	if (inf.linenum >= end_linenum)
+	    break;
+	if (c == "\n") {
+	    result += "\n";
+	    result += "" + inf.linenum + ": ";
+	} else {
+	    result += c;
+	}
     }
 
     return (result);
