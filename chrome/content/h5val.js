@@ -1,5 +1,5 @@
 var h5val = {};
-h5val.verbose = 9;
+h5val.verbose = 0;
 h5val.eof = [ "eof" ];
 
 h5val.inline_elts = { "a":1, "abbr":1, "acronym":1, "applet":1, "b":1,
@@ -58,8 +58,49 @@ h5val.restricted_elts = {
     "ul": { "li":1 }
 };
 
+h5val.entities = { "aacute":1, "acirc":1, "acute":1, "aelig":1,
+		   "agrave":1, "alefsym":1, "alpha":1, "amp":1, "and":1,
+		   "ang":1, "aring":1, "asymp":1, "atilde":1, "auml":1,
+		   "bdquo":1, "beta":1, "brvbar":1, "bull":1, "cap":1,
+		   "ccedil":1, "cedil":1, "cent":1, "chi":1, "circ":1,
+		   "clubs":1, "cong":1, "copy":1, "crarr":1, "cup":1,
+		   "curren":1, "dagger":1, "darr":1, "deg":1, "delta":1,
+		   "diams":1, "divide":1, "eacute":1, "ecirc":1,
+		   "egrave":1, "empty":1, "emsp":1, "ensp":1,
+		   "epsilon":1, "equiv":1, "eta":1, "eth":1, "euml":1,
+		   "euro":1, "exist":1, "fnof":1, "forall":1, "frac12":1,
+		   "frac14":1, "frac34":1, "frasl":1, "gamma":1, "ge":1,
+		   "gt":1, "harr":1, "hearts":1, "hellip":1, "iacute":1,
+		   "icirc":1, "iexcl":1, "igrave":1, "image":1, "infin":1,
+		   "int":1, "iota":1, "iquest":1, "isin":1, "iuml":1,
+		   "kappa":1, "lambda":1, "lang":1, "laquo":1, "larr":1,
+		   "lceil":1, "ldquo":1, "le":1, "lfloor":1, "lowast":1,
+		   "loz":1, "lrm":1, "lsaquo":1, "lsquo":1, "lt":1,
+		   "macr":1, "mdash":1, "micro":1, "middot":1, "minus":1,
+		   "mu":1, "nabla":1, "nbsp":1, "ndash":1, "ne":1, "ni":1,
+		   "not":1, "notin":1, "nsub":1, "ntilde":1, "nu":1,
+		   "oacute":1, "ocirc":1, "oelig":1, "ograve":1, "oline":1,
+		   "omega":1, "omicron":1, "oplus":1, "or":1, "ordf":1,
+		   "ordm":1, "oslash":1, "otilde":1, "otimes":1, "ouml":1,
+		   "para":1, "part":1, "permil":1, "perp":1, "phi":1,
+		   "pi":1, "piv":1, "plusmn":1, "pound":1, "prime":1,
+		   "prod":1, "prop":1, "psi":1, "quot":1, "radic":1,
+		   "rang":1, "raquo":1, "rarr":1, "rceil":1, "rdquo":1,
+		   "real":1, "reg":1, "rfloor":1, "rho":1, "rlm":1,
+		   "rsaquo":1, "rsquo":1, "sbquo":1, "scaron":1,
+		   "sdot":1, "sect":1, "shy":1, "sigma":1, "sigmaf":1,
+		   "sim":1, "spades":1, "sub":1, "sube":1, "sum":1,
+		   "sup":1, "sup1":1, "sup2":1, "sup3":1, "supe":1,
+		   "szlig":1, "tau":1, "there4":1, "theta":1, "thetasym":1,
+		   "thinsp":1, "thorn":1, "tilde":1, "times":1, "trade":1,
+		   "uacute":1, "uarr":1, "ucirc":1, "ugrave":1, "uml":1,
+		   "upsih":1, "upsilon":1, "uuml":1, "weierp":1, "xi":1,
+		   "yacute":1, "yen":1, "yuml":1, "zeta":1, "zwj":1,
+		   "zwnj":1 };
+
 h5val.check_nesting = function (parent, child) {
-    h5val.log ("check_nesting("+parent+","+child+")");
+    if (h5val.verbose)
+	h5val.log ("check_nesting("+parent+","+child+")");
 
     var is_inline = h5val.inline_elts[child];
     var is_block = h5val.block_elts[child];
@@ -71,7 +112,8 @@ h5val.check_nesting = function (parent, child) {
     if (parent == null)
 	return null;
 
-    h5val.log ("parent = '" + parent + "'\n");
+    if (h5val.verbose)
+	h5val.log ("parent = '" + parent + "'\n");
 
     var allowed = h5val.restricted_elts[parent];
     if (allowed) {
@@ -184,18 +226,11 @@ h5val.skip_whitespace = function (inf) {
 }
 
 h5val.valid_entity = function (str) {
-    switch (str) {
-    case "lt": case "gt": case "amp": case "cent": case "pound": 
-    case "yen": case "euro": case "sect": case "copy": case "reg": 
-    case "trade": case "nbsp": case "quot": case "iquest":
-    case "rsquo": case "lsquo":
-    case "rdquo": case "ldquo":
+    if (h5val.entities[str.toLowerCase()])
+	return 1;
+    if (str[0] == "#")
 	return (1);
-    default:
-	if (str[0] == "#")
-	    return (1);
-	return (0);
-    }
+    return (0);
 }
 
 h5val.regexp_ent = new RegExp ("^([-_a-zA-Z0-9#]+);");
@@ -216,7 +251,8 @@ h5val.validate_entity = function (inf) {
 }
 
 h5val.validate_children = function (indent, parent_tag, inf) {
-    h5val.log (indent+"validate_children("+parent_tag+")");
+    if (h5val.verbose)
+	h5val.log (indent+"validate_children("+parent_tag+")");
     var s, part, ent_name, tag_name, r, tag, parts;
     while (1) {
 	c = h5val.getc (inf);
@@ -246,7 +282,10 @@ h5val.validate_children = function (indent, parent_tag, inf) {
 		    return ("close tag syntax error:"
 			    + "junk before final greater-than");
 		}
-		h5val.log ("handle <"+parent_tag+">...</"+tag_name+">");
+
+		if (h5val.verbose)
+		    h5val.log ("handle <"+parent_tag+">...</"+tag_name+">");
+
 		if (parent_tag != tag_name) {
 		    return ("incorrect close tag: got "
 			    + tag_name + "; expected " + parent_tag);
