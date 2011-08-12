@@ -1,7 +1,92 @@
 var h5val = {};
-h5val.verbose = 0;
+h5val.verbose = 9;
 h5val.eof = [ "eof" ];
-h5val.has_children = [ "has_children" ];
+
+h5val.inline_elts = { "a":1, "abbr":1, "acronym":1, "applet":1, "b":1,
+		      "basefont":1, "bdo":1, "big":1, "br":1, "button":1,
+		      "cite":1, "code":1, "dfn":1, "em":1, "font":1, 
+		      "i":1, "iframe":1, "img":1, "input":1, "kbd":1,
+		      "label":1, "map":1, "n":1, "object":1, "param":1,
+		      "q":1, "s":1, "samp":1, "script":1, "select":1,
+		      "small":1, "span":1, "strike":1, "strong":1, 
+		      "sub":1, "sup":1, "textarea":1, "tt":1, "u":1,
+		      "var":1 };
+
+h5val.block_elts = { "address":1, "blockquote":1, "center":1, "dir":1,
+		     "div":1, "dl":1, "fieldset":1, "form":1, "h1":1,
+		     "h2":1, "h3":1, "h4":1, "h5":1, "h6":1, "hr":1,
+		     "isindex":1, "menu":1, "noframes":1, "noscript":1,
+		     "ol":1, "p":1, "pre":1, "table":1, "ul":1 };
+
+h5val.restricted_elts = {
+    "applet": { "BLOCK":1 },
+    "blockquote": { "BLOCK":1 },
+    "body": { "BLOCK":1 },
+    "button": { "BLOCK":1 },
+    "center": { "BLOCK":1 },
+    "colgroup": { "col":1 },
+    "dd": { "BLOCK":1 },
+    "del": { "BLOCK":1 },
+    "dir": { "BLOCK":1 },
+    "div": { "BLOCK":1 },
+    "dl": { "dt":1, "dd":1 },
+    "fieldset": { "BLOCK":1 },
+    "form": { "BLOCK":1 },
+    "head": { "title":1, "isindex":1, "base":1, "script":1,
+	      "style":1, "meta":1, "link":1, "object":1 },
+    "html": { "head":1, "body":1 },
+    "iframe": { "BLOCK":1 },
+    "ins": { "BLOCK":1 },
+    "li": { "BLOCK":1 },
+    "map": { "BLOCK":1 },
+    "menu": { "BLOCK":1 },
+    "noframes": { "BLOCK":1 },
+    "noscript": { "BLOCK":1 },
+    "object": { "BLOCK":1 },
+    "ol": { "li":1 },
+    "optgroup": { "option":1 },
+    "select": { "optgroup":1, "option":1 },
+    "table": {"caption":1, "col":1, "colgroup":1,
+	      "thead":1, "tfoot":1, "tbody":1},
+    "tbody": { "tr":1 },
+    "td": { "BLOCK":1 },
+    "tfoot": { "tr":1 },
+    "th": { "BLOCK":1 },
+    "thead": { "tr":1 },
+    "title": {},
+    "tr": { "th":1, "td":1 },
+    "ul": { "li":1 }
+};
+
+h5val.check_nesting = function (parent, child) {
+    h5val.log ("check_nesting("+parent+","+child+")");
+
+    var is_inline = h5val.inline_elts[child];
+    var is_block = h5val.block_elts[child];
+    var is_restricted = h5val.restricted_elts[child];
+
+    if (! is_inline && ! is_block && ! is_restricted)
+	return ("invalid tag " + child);
+
+    if (parent == null)
+	return null;
+
+    h5val.log ("parent = '" + parent + "'\n");
+
+    var allowed = h5val.restricted_elts[parent];
+    if (allowed) {
+	if (allowed["BLOCK"])
+	    return (null); /* ok */
+	if (allowed[child])
+	    return (null); /* ok */
+	return ("invalid nesting: " + parent + " may not contain " + child);
+    }
+	
+    if (is_inline)
+	return null;
+
+    return ("invalid block: " + parent + " may not contain " + child);
+}
 
 h5val.log = function (str) {
     console.log (str);
@@ -66,6 +151,8 @@ h5val.getc = function (inf) {
 		}
 	    }
 	} else {
+	    if (h5val.verbose >= 9)
+		console.log ("getc = " + c);
 	    return (c);
 	}
     }
@@ -79,7 +166,7 @@ h5val.peekc = function (inf) {
 
 h5val.unget = function (inf) {
     if (inf.off <= 0)
-	return (h5val.elf);
+	return (h5val.eof);
     inf.off--;
     var c = inf.data[inf.off];
     if (c == "\n")
@@ -128,8 +215,9 @@ h5val.validate_entity = function (inf) {
     return null;
 }
 
-h5val.validate_children = function (indent, parent_tag_info, inf) {
-    var s, part, ent_name, tag_name, r, tag_info, parts;
+h5val.validate_children = function (indent, parent_tag, inf) {
+    h5val.log (indent+"validate_children("+parent_tag+")");
+    var s, part, ent_name, tag_name, r, tag, parts;
     while (1) {
 	c = h5val.getc (inf);
 	if (c == h5val.eof) {
@@ -150,15 +238,18 @@ h5val.validate_children = function (indent, parent_tag_info, inf) {
 			    + "junk after less-than, slash");
 		}
 		tag_name = parts[1];
+		if (h5val.verbose >= 9)
+		    h5val.log ("soak " + tag_name);
 		inf.off += tag_name.length;
 		c = h5val.getc (inf);
 		if (c != ">") {
 		    return ("close tag syntax error:"
 			    + "junk before final greater-than");
 		}
-		if (parent_tag_info.name != tag_name) {
+		h5val.log ("handle <"+parent_tag+">...</"+tag_name+">");
+		if (parent_tag != tag_name) {
 		    return ("incorrect close tag: got "
-			    + tag_name + "; expected " + parent_tag_info.name);
+			    + tag_name + "; expected " + parent_tag);
 		}
 		return null;
 	    }
@@ -170,18 +261,11 @@ h5val.validate_children = function (indent, parent_tag_info, inf) {
 	    tag_name = parts[1];
 	    inf.off += tag_name.length;
 
-	    tag_info = h5val.tags[tag_name];
-
-	    if (tag_info == null)
-		return "unknown tag " + tag_name;
+	    r = h5val.check_nesting (parent_tag, tag_name);
+	    if (r)
+		return (r);
 	    
-	    if (parent_tag_info
-		&& parent_tag_info.may_contain_blocks == 0
-		&& tag_info.block == 1) {
-		return "illegal block inside inline " + tag_name;
-	    }
-	    
-	    r = h5val.validate_tag (indent, tag_info, inf);
+	    r = h5val.validate_tag (indent, tag_name, inf);
 	    if (r)
 		return r;
 	}
@@ -190,14 +274,14 @@ h5val.validate_children = function (indent, parent_tag_info, inf) {
 }
 
 /* we've read the less than and the tag name; now soak up attrs */
-h5val.validate_tag = function (indent, tag_info, inf) {
+h5val.validate_tag = function (indent, tag_name, inf) {
     var r, c;
     var attrs = [];
     var attrname, attrval;
     var in_quotes;
 
     if (h5val.verbose) {
-	h5val.log (indent + "validate_tag(" + tag_info.name + ")");
+	h5val.log (indent + "validate_tag(" + tag_name + ")");
 	indent += "  ";
     }
 
@@ -260,62 +344,22 @@ h5val.validate_tag = function (indent, tag_info, inf) {
 	    c = h5val.getc (inf);
 	    if (c != ">")
 		return "self-close syntax error " + tag_name;
-	    r = h5val.validate_attrs (tag_info, attrs);
-	    if (r == h5val.has_children)
-		return null;
+	    r = h5val.validate_attrs (tag_name, attrs);
 	    return r;
 	} else if (c == ">") {
-	    r = h5val.validate_attrs (tag_info, attrs);
-	    if (r == h5val.has_children) {
-		r = h5val.validate_children (indent, tag_info, inf);
-		if (r == h5val.eof)
-		    return "unexpected eof looking for end of " + tag_name;
+	    r = h5val.validate_attrs (tag_name, attrs);
+	    if (r)
 		return r;
-	    }
+	    r = h5val.validate_children (indent, tag_name, inf);
+	    if (r == h5val.eof)
+		return "unexpected eof looking for end of " + tag_name;
+	    return (r);
 	}
     }
 }
 
-h5val.tags = [];
-
-h5val.mktags = function (str, block, may_contain_block) {
-    var arr = str.split (" ");
-    for (var i = 0; i < arr.length; i++) {
-	var tag = arr[i];
-	h5val.tags[tag] = {
-	    "name": tag,
-	    "block": block,
-	    "may_contain_block": may_contain_block
-	};
-    }
-}
-
-/* roughly placed ... will need to refine */
-
-/* blocks that can contain blocks */
-h5val.mktags ("html head meta link title body div form", 1, 1);
-h5val.mktags ("fieldset ul li dd noframes noscript noembed", 1, 1);
-h5val.mktags ("header footer article aside section nav figure", 1, 1);
-h5val.mktags ("figcaption mark ruby rt rp applet area", 1, 1);
-h5val.mktags ("base basefont body dl embed fieldset form frame frameset", 1, 1);
-h5val.mktags ("iframe li link map menu meta object ol", 1, 1);
-h5val.mktags ("optgroup option output param script select source", 1, 1);
-h5val.mktags ("style table caption td th col colgroup tr tfoot thead", 1, 1);
-h5val.mktags ("tbody ul bgsound isindex multicol noframes", 1, 1);
-
-/* blocks that can't contain other blocks */
-h5val.mktags ("p h1 h2 h3 h4 h5 h6 label br hr dt center", 1, 0);
-h5val.mktags ("blockquote textarea", 1, 0);
-
-/* inlines */
-h5val.mktags ("a span input tt i b u s strike big small em", 0, 0);
-h5val.mktags ("strong dfn code samp kbd var cite acronym", 0, 0);
-h5val.mktags ("abbr sub sup bdo address wbr br button canvas dir", 0, 0);
-h5val.mktags ("font img input keygen label del ins pre plaintext q", 0, 0);
-h5val.mktags ("time title track bq nextid spacer video audio", 0, 0);
-
-h5val.validate_attrs = function (tag_info, attrs) {
-    return h5val.has_children;
+h5val.validate_attrs = function (tag_name, attrs) {
+    return null; /* ok */
 }
 
 h5val.validate = function (str) {
@@ -330,6 +374,7 @@ h5val.validate = function (str) {
     inf.limit = str.length;
     inf.linenum = 1;
 
+    /* discard DOCTYPE */
     while ((c = h5val.getc (inf)) != h5val.eof) {
 	if (c == ">")
 	    break;
@@ -338,6 +383,8 @@ h5val.validate = function (str) {
     var result = h5val.validate_children ("", null, inf);
     if (! result || result == h5val.eof)
 	return null;
+
+    h5val.verbose = 0;
 
     var ret = {};
     ret.linenum = inf.linenum;
@@ -354,8 +401,6 @@ h5val.validate = function (str) {
     }
     h5val.getc (inf);
     
-    var need_prefix = 1;
-
     var cur_linenum = inf.linenum;
     var cur_line = "";
 
@@ -382,4 +427,3 @@ h5val.validate = function (str) {
 if (typeof exports != "undefined") {
     exports.validate = h5val.validate;
 }
-

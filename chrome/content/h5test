@@ -19,7 +19,10 @@ var r = h5val.validate (html);
 if (r == null) {
     console.log ("validation passed");
 } else {
-    console.log ("validate result: " + r);
+    console.log ("validate result:\n");
+    for (name in r) {
+	console.log (name + ": " + r[name]);
+    }
 }
 
 process.exit (0);
