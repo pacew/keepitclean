@@ -27,11 +27,22 @@ keepitclean.initial_load = function(ev) {
 			       function () {keepitclean.toggle();},
 			       false);
 
-
     keepitclean.count = 0;
     keepitclean.toolbar_icon = itemLabel;
 
     keepitclean.ready = 1;
+}
+
+keepitclean.enable_click = function (elt) {
+    if (elt.checked) {
+	dump ("enable validator\n");
+	keepitclean.enabled = 1;
+	keepitclean.set_status (1, "ready");
+    } else {
+	dump ("disable validator\n");
+	keepitclean.enabled = 0;
+	keepitclean.set_status (0, null);
+    }
 }
 
 keepitclean.view_load = function (win) {
@@ -79,6 +90,15 @@ keepitclean.view_load = function (win) {
 	elt_summary.appendChild (doc.createTextNode (summary));
 	parent.appendChild (elt_summary);
     }
+
+    var elt_enable = doc.getElementById ("kic-enable");
+    if (! keepitclean.enabled)
+	elt_enable.checked = false;
+    elt_enable.addEventListener("click",
+				function () {
+				    keepitclean.enable_click(elt_enable);
+				},
+				false);
 }
 
 
