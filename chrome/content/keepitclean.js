@@ -1,6 +1,7 @@
 var keepitclean = {};
 keepitclean.verbose = 0;
 keepitclean.enabled = 1;
+keepitclean.view_win = null;
 
 keepitclean.initial_load = function(ev) {
     // Find the most recently used window
@@ -44,16 +45,23 @@ function dump_val (name, val) {
 
 keepitclean.view_load = function (win) {
     var elt = win.document.getElementById ("kic-view");
-    elt.setAttribute ("value", "validation results...");
+    elt.setAttribute ("value", "validation results: " + new Date ());
 }
 
 
 keepitclean.toggle = function () {
-    dump ("keepitclean.toggle()\n");
+    var win = keepitclean.view_win;
 
-    var win = window.open ("chrome://keepitclean/content/view.xul", "view",
-			   "chrome,width=600,height=400");
+    if (win && ! win.closed ) {
+	win.close ();
+	keepitclean.view_win = null;
+	return;
+    }
 
+    win = window.open ("chrome://keepitclean/content/view.xul", "view",
+		       "chrome,width=600,height=400");
+    keepitclean.view_win = win;
+    
     win.addEventListener("load",
 			 function () {keepitclean.view_load(win);},
 			 false);
