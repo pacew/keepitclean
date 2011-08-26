@@ -62,7 +62,13 @@ h5val.restricted_elts = {
     "thead": { "tr":1 },
     "title": {},
     "tr": { "th":1, "td":1 },
-    "ul": { "li":1 }
+    "ul": { "li":1 },
+
+    /* not sure about these html5 elts */
+    "section": { "BLOCK":1 },
+    "header": { "BLOCK":1 },
+    "footer": { "BLOCK":1 },
+
 };
 
 h5val.entities = { "aacute":1, "acirc":1, "acute":1, "aelig":1,
@@ -299,8 +305,6 @@ h5val.validate_children = function (indent, parent_tag, inf) {
 	    r = h5val.validate_entity (inf);
 	    if (r)
 		return (r);
-	} else if (c == ">") {
-	    return "unexpected greater-than";
 	} else if (c == "<") {
 	    if (h5val.peekc (inf) == "/") {
 		h5val.getc (inf);
