@@ -54,7 +54,7 @@ h5val.restricted_elts = {
     "select": { "optgroup":1, "option":1 },
     "style": {},
     "table": {"caption":1, "col":1, "colgroup":1,
-	      "thead":1, "tfoot":1, "tbody":1},
+	      "thead":1, "tfoot":1, "tbody":1, "tr":1 },
     "tbody": { "tr":1 },
     "td": { "BLOCK":1 },
     "tfoot": { "tr":1 },
