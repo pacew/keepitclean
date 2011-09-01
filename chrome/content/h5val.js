@@ -68,6 +68,7 @@ h5val.restricted_elts = {
     "section": { "BLOCK":1 },
     "header": { "BLOCK":1 },
     "footer": { "BLOCK":1 },
+    "nav": { "BLOCK":1 },
 
 };
 
