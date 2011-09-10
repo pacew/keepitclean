@@ -3,6 +3,7 @@ XPI_FILES = chrome.manifest install.rdf \
 	chrome/content/overlay.xul \
 	chrome/content/viewsource.js \
 	chrome/content/viewsource.xul \
+	chrome/content/view.xul \
 	chrome/content/h5val.js \
 	chrome/content/about.xul \
 	chrome/locale/en-US/overlay.dtd \
