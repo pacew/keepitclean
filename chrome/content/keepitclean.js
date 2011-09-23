@@ -252,8 +252,6 @@ keepitclean.every_page_load = function (ev) {
     }
 } 
 
-
-
 window.addEventListener("load",
 			function () {keepitclean.initial_load();},
 			false);

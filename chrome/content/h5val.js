@@ -10,13 +10,15 @@ h5val.inline_elts = { "a":1, "abbr":1, "acronym":1, "applet":1, "b":1,
 		      "q":1, "s":1, "samp":1, "script":1, "select":1,
 		      "small":1, "span":1, "strike":1, "strong":1, 
 		      "sub":1, "sup":1, "textarea":1, "tt":1, "u":1,
-		      "var":1 };
+		      "var":1, "fb:share-button":1 };
 
 h5val.block_elts = { "address":1, "blockquote":1, "center":1, "dir":1,
 		     "div":1, "dl":1, "fieldset":1, "form":1, "h1":1,
 		     "h2":1, "h3":1, "h4":1, "h5":1, "h6":1, "hr":1,
 		     "isindex":1, "menu":1, "noframes":1, "noscript":1,
-		     "ol":1, "p":1, "pre":1, "table":1, "ul":1 };
+		     "ol":1, "p":1, "pre":1, "table":1, "ul":1,
+		     "dt":1
+		   };
 
 h5val.restricted_elts = {
     "applet": { "BLOCK":1 },
@@ -268,7 +270,7 @@ h5val.valid_entity = function (str) {
 }
 
 h5val.regexp_ent = new RegExp ("^([-_a-zA-Z0-9#]+);");
-h5val.regexp_tag = new RegExp ("^([-_a-zA-Z0-9]+)");
+h5val.regexp_tag = new RegExp ("^([-_a-zA-Z0-9:]+)");
 
 h5val.validate_entity = function (inf) {
     var s, parts, ent_name;

@@ -1,6 +1,14 @@
 #! /bin/sh
 
-profile_dir=`ls -dt ~/.mozilla/firefox/*.dev | head -1`
+if [ $# != 1 ]
+then
+    echo "usage: install-ext profile-name"
+    exit 1
+fi
+
+profile=$1
+
+profile_dir=`ls -dt ~/.mozilla/firefox/*.$1 | head -1`
 
 if [ "${profile_dir}" = "" ]
 then
@@ -12,5 +20,6 @@ extensions_dir=${profile_dir}/extensions
 mkdir -p ${extensions_dir}
 
 rm -f ${extensions_dir}/keepitclean@pacew.org.xpi
+rm -f ${extensions_dir}/keepitclean@pacew.org
 
 pwd > ${extensions_dir}/keepitclean@pacew.org
